@@ -97,30 +97,22 @@ with cols[2]:
                     st.success(f"Top summaries sent to {user_email}!")
                 except Exception as e:
                     st.error(f"Failed to send email: {e}")
-# Right-aligned Download CSV
+# Right-aligned Download CSV (safe against empty/malformed files)
 with cols[4]:
--    if os.path.exists(target_csv) and os.path.getsize(target_csv) > 0:
--        st.download_button(
--            "Download CSV",
--            pd.read_csv(target_csv).to_csv(index=False),
--            "scraped_news.csv",
--            "text/csv"
--        )
-+    if os.path.exists(target_csv) and os.path.getsize(target_csv) > 0:
-+        try:
-+            df = pd.read_csv(target_csv)
-+        except pd.errors.EmptyDataError:
-+            # If the CSV is blank or malformed, remove it so downstream code won’t break
-+            os.remove(target_csv)
-+            st.warning("news.csv was empty—run the scraper to generate data.")
-+        else:
-+            st.download_button(
-+                "Download CSV",
-+                df.to_csv(index=False),
-+                "scraped_news.csv",
-+                "text/csv"
-+            )
-
+    if os.path.exists(target_csv) and os.path.getsize(target_csv) > 0:
+        try:
+            df = pd.read_csv(target_csv)
+        except pd.errors.EmptyDataError:
+            # If the CSV is blank or malformed, remove it so downstream code won’t break
+            os.remove(target_csv)
+            st.warning("news.csv was empty—run the scraper to generate data.")
+        else:
+            st.download_button(
+                "Download CSV",
+                df.to_csv(index=False),
+                "scraped_news.csv",
+                "text/csv"
+            )
 # Load and show data
 if os.path.exists(target_csv) and os.path.getsize(target_csv) > 0:
     df = pd.read_csv(target_csv)
